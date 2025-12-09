@@ -107,7 +107,12 @@ func createChatCompletion[T any](apiKey string, params ChatCompletionRequest[T])
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("API error: %s - %s", resp.Status, string(body))
+		var respErr map[string]Error
+		if err := json.Unmarshal(body, &respErr); err != nil {
+			return nil, fmt.Errorf("error unmarshaling response: %w", err)
+		}
+
+		return nil, fmt.Errorf("API error: %d - %s", resp.StatusCode, respErr["error"].Message)
 	}
 
 	var result struct {
