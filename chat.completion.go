@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/visiperf/open-router/schema"
+	"github.com/orixa-group/open-router/schema"
 )
 
 const (

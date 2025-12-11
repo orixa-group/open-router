@@ -1,4 +1,4 @@
-module github.com/visiperf/open-router
+module github.com/orixa-group/open-router
 
 go 1.24.1
 

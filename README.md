@@ -11,7 +11,7 @@ A type-safe, structured output-oriented Go client for the [OpenRouter](https://o
 ## Installation
 
 ```bash
-go get github.com/visiperf/open-router
+go get github.com/orixa-group/open-router
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/visiperf/open-router"
+	"github.com/orixa-group/open-router"
 )
 
 // Define your desired output structure
