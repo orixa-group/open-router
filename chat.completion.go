@@ -15,12 +15,19 @@ const (
 )
 
 type ChatCompletionRequest[T any] struct {
-	model    Model
-	messages []Message
+	model     Model
+	messages  []Message
+	reasoning ReasoningEffort
 }
 
 func ChatCompletion[T any]() *ChatCompletionRequest[T] {
 	return &ChatCompletionRequest[T]{}
+}
+
+func (r *ChatCompletionRequest[T]) WithReasoningEffort(value ReasoningEffort) *ChatCompletionRequest[T] {
+	r.reasoning = value
+
+	return r
 }
 
 func (r *ChatCompletionRequest[T]) Use(model Model) *ChatCompletionRequest[T] {
@@ -44,40 +51,10 @@ func (r ChatCompletionRequest[T]) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error generating schema: %w", err)
 	}
 
-	return json.Marshal(struct {
-		Model          Model     `json:"model"`
-		Messages       []Message `json:"messages"`
-		ResponseFormat struct {
-			Type       string `json:"type"`
-			JsonSchema struct {
-				Name   string         `json:"name"`
-				Strict bool           `json:"strict"`
-				Schema *schema.Schema `json:"schema"`
-			} `json:"json_schema"`
-		} `json:"response_format"`
-	}{
-		Model:    r.model,
-		Messages: r.messages,
-		ResponseFormat: struct {
-			Type       string `json:"type"`
-			JsonSchema struct {
-				Name   string         `json:"name"`
-				Strict bool           `json:"strict"`
-				Schema *schema.Schema `json:"schema"`
-			} `json:"json_schema"`
-		}{
-			Type: "json_schema",
-			JsonSchema: struct {
-				Name   string         `json:"name"`
-				Strict bool           `json:"strict"`
-				Schema *schema.Schema `json:"schema"`
-			}{
-				Name:   "response",
-				Strict: true,
-				Schema: s,
-			},
-		},
-	})
+	req := NewOpenRouterChatCompletionRequest(r.model, s, r.messages...)
+	req.SetReasoningEffort(r.reasoning)
+
+	return json.Marshal(req)
 }
 
 func createChatCompletion[T any](apiKey string, params ChatCompletionRequest[T]) (*T, error) {
