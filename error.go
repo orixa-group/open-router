@@ -1,8 +1,10 @@
 package openrouter
 
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Param   string `json:"param"`
-	Type    string `json:"type"`
+type apiError struct {
+	Error struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+		Param   string `json:"param"`
+		Type    string `json:"type"`
+	} `json:"error"`
 }

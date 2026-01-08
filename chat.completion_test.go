@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -156,4 +158,44 @@ func TestChatCompletionRequest_MarshalJSON(t *testing.T) {
 	assert.True(t, ok)
 	assert.Contains(t, props, "summary")
 	assert.Contains(t, props, "tags")
+}
+
+func TestChatCompletionRequest_Effor(t *testing.T) {
+	apiKey := os.Getenv("OPENROUTER_TEST_API_KEY")
+
+	systemMessage := SystemMessage{
+		Content: "You are a geography expert. You must respond in the answer attribute in capitalized",
+	}
+
+	userMessage := UserMessage{
+		Content: []Content{
+			TextContent{
+				Text: "What is the most populated city between Paris, Roma and Tokyo ? Give me just the city.",
+			},
+		},
+	}
+
+	type response struct {
+		Answer string `json:"answer"`
+	}
+
+	expectedResponse := &response{
+		Answer: "TOKYO",
+	}
+
+	for _, m := range []Model{ModelClaudeSonnet4_5, ModelGemini3Pro, ModelChatGpt5_2} {
+		for _, e := range []ReasoningEffort{ReasoningEffort_XHIGH, ""} {
+			res, err := ChatCompletion[response]().
+				Use(m).
+				AppendMessages(systemMessage, userMessage).
+				WithReasoningEffort(e).
+				GenerateContent(apiKey)
+
+			if nil != err {
+				t.Fatal(err)
+			} else if !reflect.DeepEqual(res, expectedResponse) {
+				t.Errorf("Error with %s/%s\nExpected:\n%v\nGot:\n%v", m, e, expectedResponse, res)
+			}
+		}
+	}
 }
