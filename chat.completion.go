@@ -104,6 +104,9 @@ func createChatCompletion[T any](apiKey string, params ChatCompletionRequest[T])
 	}
 
 	var t T
+	if len(result.Choices) == 0 {
+		return nil, fmt.Errorf("unexpected error: empty response")
+	}
 	if err := json.Unmarshal([]byte(result.Choices[0].Message.Content), &t); err != nil {
 		return nil, fmt.Errorf("error unmarshaling response: %w", err)
 	}
