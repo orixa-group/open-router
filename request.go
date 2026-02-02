@@ -1,6 +1,8 @@
 package openrouter
 
-import "github.com/orixa-group/open-router/schema"
+import (
+	"github.com/orixa-group/open-router/schema"
+)
 
 type reasoningConfig struct {
 	Effort ReasoningEffort `json:"effort"`
@@ -33,6 +35,11 @@ type openRouterChatCompletionRequest struct {
 	Messages       []Message        `json:"messages"`
 	ResponseFormat responseFormat   `json:"response_format"`
 	Reasoning      *reasoningConfig `json:"reasoning,omitempty"`
+	Tools          []*Tool          `json:"tools,omitempty"`
+}
+
+func (o *openRouterChatCompletionRequest) setTools(tools []*Tool) {
+	o.Tools = tools
 }
 
 func (o *openRouterChatCompletionRequest) SetReasoningEffort(value ReasoningEffort) {

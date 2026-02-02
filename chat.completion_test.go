@@ -160,7 +160,31 @@ func TestChatCompletionRequest_MarshalJSON(t *testing.T) {
 	assert.Contains(t, props, "tags")
 }
 
-func TestChatCompletionRequest_Effor(t *testing.T) {
+func TestChatCompletionRequest_WithWebSearch(t *testing.T) {
+	ch := ChatCompletion[int32]()
+
+	ch.WithWebSearch(true)
+	if len(ch.tools) != 1 {
+		t.Error("tools should have only 1 element	")
+	}
+
+	ch.WithWebSearch(true)
+	if len(ch.tools) > 1 {
+		t.Error("duplicate tools")
+	}
+
+	ch.WithWebSearch(false)
+	if len(ch.tools) > 0 {
+		t.Error("tools should be empty")
+	}
+
+	ch.WithWebSearch(false)
+	if len(ch.tools) > 0 {
+		t.Error("tools should be empty")
+	}
+}
+
+func TestChatCompletionRequest_EffortAndWebSearch(t *testing.T) {
 	apiKey := os.Getenv("OPENROUTER_TEST_API_KEY")
 
 	systemMessage := SystemMessage{
@@ -189,6 +213,7 @@ func TestChatCompletionRequest_Effor(t *testing.T) {
 				Use(m).
 				AppendMessages(systemMessage, userMessage).
 				WithReasoningEffort(e).
+				WithWebSearch(true).
 				GenerateContent(apiKey)
 
 			if nil != err {

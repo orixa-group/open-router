@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/orixa-group/open-router/schema"
 	"io"
 	"net/http"
-
-	"github.com/orixa-group/open-router/schema"
+	"slices"
 )
 
 const (
@@ -18,6 +18,7 @@ type ChatCompletionRequest[T any] struct {
 	model     Model
 	messages  []Message
 	reasoning ReasoningEffort
+	tools     []*Tool
 }
 
 func ChatCompletion[T any]() *ChatCompletionRequest[T] {
@@ -26,6 +27,20 @@ func ChatCompletion[T any]() *ChatCompletionRequest[T] {
 
 func (r *ChatCompletionRequest[T]) WithReasoningEffort(value ReasoningEffort) *ChatCompletionRequest[T] {
 	r.reasoning = value
+
+	return r
+}
+
+func (r *ChatCompletionRequest[T]) WithWebSearch(enabled bool) *ChatCompletionRequest[T] {
+	index := slices.IndexFunc(r.tools, func(t *Tool) bool {
+		return t.Type == ToolTypeWebSearch
+	})
+
+	if enabled && -1 == index {
+		r.tools = append(r.tools, NewWebSearch())
+	} else if !enabled && index >= 0 {
+		r.tools = slices.Delete(r.tools, index, index+1)
+	}
 
 	return r
 }
@@ -53,6 +68,7 @@ func (r ChatCompletionRequest[T]) MarshalJSON() ([]byte, error) {
 
 	req := NewOpenRouterChatCompletionRequest(r.model, s, r.messages...)
 	req.SetReasoningEffort(r.reasoning)
+	req.setTools(r.tools)
 
 	return json.Marshal(req)
 }
